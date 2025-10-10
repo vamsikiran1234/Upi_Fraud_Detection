@@ -98,6 +98,35 @@ The system consists of several components:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Structure
+
+The project directory is organised as follows:
+
+```
+├── advanced_quick_start.py     # Advanced system startup
+├── quick_start.py              # Basic system startup
+├── frontend/                   # Frontend web interface
+│   ├── server.py               # Frontend server
+│   ├── index.html              # Main HTML page
+│   ├── script.js               # Frontend JavaScript
+│   └── styles.css              # CSS styles
+├── dashboard/                  # React dashboard
+│   ├── src/                    # React source code
+│   └── public/                 # Public assets
+├── models/                     # ML model files
+│   ├── gnn/                    # Graph Neural Network models
+│   ├── tabular/                # Tabular data models
+│   └── sequence/               # Sequence models
+├── serving/                    # Model serving components
+│   └── models/                 # Model implementations
+├── data/                       # Data storage
+├── config/                     # Configuration files
+├── docs/                       # Documentation
+├── tests/                      # Test files
+└── infra/                      # Infrastructure code
+    └── k8s/                    # Kubernetes configurations
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -105,3 +134,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Author
 
 © 2025 S K Ismail
+
+---
+
+Give this repository a ⭐ if you like it.
