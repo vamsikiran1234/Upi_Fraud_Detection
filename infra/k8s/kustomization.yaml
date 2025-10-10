@@ -1,0 +1,47 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fraud-detection
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - pvc.yaml
+  - redis-deployment.yaml
+  - postgres-deployment.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - monitoring.yaml
+
+images:
+  - name: fraud-detection
+    newTag: latest
+
+commonLabels:
+  app.kubernetes.io/name: fraud-detection
+  app.kubernetes.io/version: "1.0.0"
+  app.kubernetes.io/component: api
+  app.kubernetes.io/part-of: fraud-detection-system
+
+configMapGenerator:
+  - name: fraud-detection-env
+    literals:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_FORMAT=json
+
+secretGenerator:
+  - name: fraud-detection-tls
+    type: kubernetes.io/tls
+    files:
+      - tls.crt=certs/tls.crt
+      - tls.key=certs/tls.key
+
+patchesStrategicMerge:
+  - patches/production-resources.yaml
+
+replicas:
+  - name: fraud-detection-api
+    count: 3

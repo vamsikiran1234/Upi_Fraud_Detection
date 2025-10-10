@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  fraud-detection-api:
+    build:
+      context: ../serving
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=fraud_detection
+      - POSTGRES_USER=fraud_user
+      - POSTGRES_PASSWORD=password123
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ../serving:/app
+      - model-data:/app/models
+    networks:
+      - fraud-detection-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - fraud-detection-network
+
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=fraud_detection
+      - POSTGRES_USER=fraud_user
+      - POSTGRES_PASSWORD=password123
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../infra/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - fraud-detection-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    networks:
+      - fraud-detection-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - fraud-detection-network
+
+volumes:
+  redis-data:
+  postgres-data:
+  prometheus-data:
+  grafana-data:
+  model-data:
+
+networks:
+  fraud-detection-network:
+    driver: bridge

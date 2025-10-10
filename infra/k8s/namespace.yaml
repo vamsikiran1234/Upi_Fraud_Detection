@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fraud-detection
+  labels:
+    name: fraud-detection
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fraud-detection-staging
+  labels:
+    name: fraud-detection-staging
+    environment: staging

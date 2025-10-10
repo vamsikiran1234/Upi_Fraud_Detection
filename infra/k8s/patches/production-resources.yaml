@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-detection-api
+spec:
+  template:
+    spec:
+      containers:
+      - name: fraud-detection-api
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        env:
+        - name: WORKERS
+          value: "8"
+        - name: MAX_REQUESTS
+          value: "1000"
+        - name: MAX_REQUESTS_JITTER
+          value: "100"

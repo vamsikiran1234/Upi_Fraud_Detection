@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: fraud-detection-metrics
+  namespace: fraud-detection
+  labels:
+    app: fraud-detection-api
+spec:
+  selector:
+    matchLabels:
+      app: fraud-detection-api
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: fraud-detection-alerts
+  namespace: fraud-detection
+  labels:
+    app: fraud-detection-api
+spec:
+  groups:
+  - name: fraud-detection.rules
+    rules:
+    - alert: HighFraudRate
+      expr: rate(fraud_predictions_total{decision="BLOCK"}[5m]) > 0.1
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High fraud detection rate"
+        description: "Fraud detection rate is {{ $value }} per second"
+    
+    - alert: HighLatency
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High API latency"
+        description: "95th percentile latency is {{ $value }}s"
+    
+    - alert: ModelDrift
+      expr: model_drift_score > 0.3
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Model drift detected"
+        description: "Model drift score is {{ $value }}"
+    
+    - alert: FeatureStoreDown
+      expr: up{job="fraud-detection-api"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Feature store is down"
+        description: "Feature store has been down for more than 1 minute"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: fraud-detection
+data:
+  fraud-detection-dashboard.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "UPI Fraud Detection Dashboard",
+        "tags": ["fraud", "detection", "upi"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Fraud Detection Rate",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "rate(fraud_predictions_total{decision=\"BLOCK\"}[5m])",
+                "legendFormat": "Fraud Rate"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "API Latency",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+                "legendFormat": "95th percentile"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Model Scores Distribution",
+            "type": "histogram",
+            "targets": [
+              {
+                "expr": "fraud_score_histogram",
+                "legendFormat": "Risk Scores"
+              }
+            ]
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "5s"
+      }
+    }

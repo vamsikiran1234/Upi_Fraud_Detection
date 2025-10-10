@@ -1,0 +1,92 @@
+groups:
+  - name: fraud_detection_alerts
+    rules:
+      - alert: HighFraudRate
+        expr: rate(fraud_detection_blocked_transactions_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High fraud rate detected"
+          description: "Fraud rate is {{ $value }} transactions per second"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(fraud_detection_prediction_duration_seconds_bucket[5m])) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High prediction latency"
+          description: "95th percentile latency is {{ $value }} seconds"
+
+      - alert: ModelDrift
+        expr: fraud_detection_model_drift_score > 0.3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Model drift detected"
+          description: "Model drift score is {{ $value }}"
+
+      - alert: LowConfidence
+        expr: avg(fraud_detection_prediction_confidence) < 0.3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low prediction confidence"
+          description: "Average confidence is {{ $value }}"
+
+      - alert: DatabaseConnection
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection lost"
+          description: "PostgreSQL database is not responding"
+
+      - alert: RedisConnection
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis connection lost"
+          description: "Redis cache is not responding"
+
+      - alert: KafkaConnection
+        expr: up{job="kafka"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kafka connection lost"
+          description: "Kafka message broker is not responding"
+
+      - alert: HighErrorRate
+        expr: rate(fraud_detection_errors_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate"
+          description: "Error rate is {{ $value }} errors per second"
+
+      - alert: MemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: DiskUsage
+        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage"
+          description: "Disk usage is {{ $value | humanizePercentage }}"

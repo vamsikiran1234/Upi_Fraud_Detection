@@ -1,0 +1,160 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: fraud-detection
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: fraud-detection-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: fraud-detection-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fraud-detection-secrets
+              key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - fraud_user
+            - -d
+            - fraud_detection
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - fraud_user
+            - -d
+            - fraud_detection
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: postgres-data-pvc
+      - name: init-scripts
+        configMap:
+          name: postgres-init-scripts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: fraud-detection
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: postgres
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: fraud-detection
+data:
+  init.sql: |
+    -- Create tables for fraud detection system
+    CREATE TABLE IF NOT EXISTS transaction_logs (
+        id SERIAL PRIMARY KEY,
+        transaction_id VARCHAR(255) UNIQUE NOT NULL,
+        risk_score DECIMAL(5,4) NOT NULL,
+        fraud_probability DECIMAL(5,4) NOT NULL,
+        decision VARCHAR(20) NOT NULL,
+        confidence DECIMAL(5,4) NOT NULL,
+        processing_time_ms DECIMAL(10,2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS user_features (
+        id SERIAL PRIMARY KEY,
+        user_hash VARCHAR(64) NOT NULL,
+        feature_name VARCHAR(100) NOT NULL,
+        feature_value JSONB NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP,
+        UNIQUE(user_hash, feature_name)
+    );
+
+    CREATE TABLE IF NOT EXISTS device_features (
+        id SERIAL PRIMARY KEY,
+        device_id VARCHAR(255) NOT NULL,
+        feature_name VARCHAR(100) NOT NULL,
+        feature_value JSONB NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP,
+        UNIQUE(device_id, feature_name)
+    );
+
+    CREATE TABLE IF NOT EXISTS fraud_labels (
+        id SERIAL PRIMARY KEY,
+        transaction_id VARCHAR(255) UNIQUE NOT NULL,
+        is_fraud BOOLEAN NOT NULL,
+        label_source VARCHAR(50) NOT NULL, -- 'analyst', 'customer', 'automated'
+        confidence DECIMAL(3,2) DEFAULT 1.0,
+        notes TEXT,
+        labeled_by VARCHAR(100),
+        labeled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create indexes for performance
+    CREATE INDEX IF NOT EXISTS idx_transaction_logs_created_at ON transaction_logs(created_at);
+    CREATE INDEX IF NOT EXISTS idx_transaction_logs_decision ON transaction_logs(decision);
+    CREATE INDEX IF NOT EXISTS idx_user_features_hash ON user_features(user_hash);
+    CREATE INDEX IF NOT EXISTS idx_device_features_device_id ON device_features(device_id);
+    CREATE INDEX IF NOT EXISTS idx_fraud_labels_transaction_id ON fraud_labels(transaction_id);
+
+    -- Create partitions for transaction_logs by month
+    CREATE TABLE IF NOT EXISTS transaction_logs_y2024m01 PARTITION OF transaction_logs
+        FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+    CREATE TABLE IF NOT EXISTS transaction_logs_y2024m02 PARTITION OF transaction_logs
+        FOR VALUES FROM ('2024-02-01') TO ('2024-03-01');
+    -- Add more partitions as needed

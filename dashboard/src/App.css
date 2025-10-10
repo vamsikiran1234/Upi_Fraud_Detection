@@ -1,0 +1,147 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Custom styles for the dashboard */
+.dashboard-card {
+  margin-bottom: 16px;
+}
+
+.metric-card {
+  text-align: center;
+  padding: 20px;
+}
+
+.metric-value {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.metric-label {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-healthy {
+  background-color: #52c41a;
+}
+
+.status-warning {
+  background-color: #faad14;
+}
+
+.status-error {
+  background-color: #ff4d4f;
+}
+
+.chart-container {
+  height: 300px;
+  margin: 16px 0;
+}
+
+.table-container {
+  margin-top: 16px;
+}
+
+.ant-layout-sider {
+  background: #001529;
+}
+
+.ant-layout-header {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ant-menu-dark {
+  background: #001529;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: #1890ff;
+}
+
+.risk-score-high {
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
+.risk-score-medium {
+  color: #faad14;
+  font-weight: bold;
+}
+
+.risk-score-low {
+  color: #52c41a;
+  font-weight: bold;
+}
+
+.decision-block {
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
+.decision-challenge {
+  color: #faad14;
+  font-weight: bold;
+}
+
+.decision-allow {
+  color: #52c41a;
+  font-weight: bold;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.error-container {
+  text-align: center;
+  padding: 40px;
+  color: #ff4d4f;
+}
+
+.refresh-button {
+  margin-left: 8px;
+}

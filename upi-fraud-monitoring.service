@@ -1,0 +1,14 @@
+[Unit]
+Description=UPI Fraud Detection Monitoring Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/upi-fraud-system
+ExecStart=/usr/bin/python3 monitoring_dashboard.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
