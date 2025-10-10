@@ -1,6 +1,12 @@
+![UPI Fraud Detection System Cover](docs/images/cover.jpg)
+
 # UPI Fraud Detection System
 
 A comprehensive machine learning-based system for detecting fraudulent transactions in UPI (Unified Payments Interface) payment networks. This project combines advanced ML algorithms, real-time monitoring, and interactive visualization to provide a robust fraud detection solution.
+
+## Repository
+
+GitHub: [https://github.com/Skismail57/UPIFraudDetectionUsingMachineLearning](https://github.com/Skismail57/UPIFraudDetectionUsingMachineLearning)
 
 ## Features
 
@@ -126,6 +132,23 @@ The project directory is organised as follows:
 └── infra/                      # Infrastructure code
     └── k8s/                    # Kubernetes configurations
 ```
+
+## Screenshots
+
+### API Documentation
+![API Documentation](./docs/images/api_documentation.jpg)
+
+### API Endpoints
+![API Endpoints](./docs/images/api_endpoints.jpg)
+
+### Dashboard Overview
+![Dashboard Overview](./docs/images/dashboard_overview.jpg)
+
+### Real-time Transactions
+![Real-time Transactions](./docs/images/realtime_transactions.jpg)
+
+### Fraud Detection Trends
+![Fraud Detection Trends](./docs/images/fraud_detection_trends.jpg)
 
 ## License
 
