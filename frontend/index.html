@@ -3,201 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPI Fraud Detection System</title>
+    <title>UPI Fraud Detection - Random Forest</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
+    <div class="app-shell">
         <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <div class="logo">
+            <div class="brand">
+                <div class="brand-mark">
                     <i class="fas fa-shield-alt"></i>
-                    <h1>UPI Fraud Detection</h1>
                 </div>
-                <div class="header-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Active Transactions</span>
-                        <span class="stat-value" id="activeTransactions">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Fraud Detected</span>
-                        <span class="stat-value fraud" id="fraudDetected">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">System Status</span>
-                        <span class="stat-value status" id="systemStatus">Online</span>
-                    </div>
+                <div>
+                    <p class="brand-kicker">UPI Fraud Detection</p>
+                    <h1>Random Forest Verification Suite</h1>
                 </div>
             </div>
+            <nav class="top-nav nav-menu">
+                <a href="#transactions" class="nav-item active" data-section="transactions">
+                    <i class="fas fa-id-card"></i>
+                    <span>Verify</span>
+                </a>
+                <a href="#analytics" class="nav-item" data-section="analytics">
+                    <i class="fas fa-diagram-project"></i>
+                    <span>Workflow</span>
+                </a>
+                <a href="#models" class="nav-item" data-section="models">
+                    <i class="fas fa-brain"></i>
+                    <span>Model</span>
+                </a>
+                <a href="#alerts" class="nav-item" data-section="alerts">
+                    <i class="fas fa-bell"></i>
+                    <span>Signals</span>
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <i class="fas fa-sliders"></i>
+                    <span>Controls</span>
+                </a>
+            </nav>
         </header>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <nav class="nav-menu">
-                    <a href="#dashboard" class="nav-item active" data-section="dashboard">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="#transactions" class="nav-item" data-section="transactions">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span>Transactions</span>
-                    </a>
-                    <a href="#analytics" class="nav-item" data-section="analytics">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Analytics</span>
-                    </a>
-                    <a href="#models" class="nav-item" data-section="models">
-                        <i class="fas fa-brain"></i>
-                        <span>ML Models</span>
-                    </a>
-                    <a href="#alerts" class="nav-item" data-section="alerts">
-                        <i class="fas fa-bell"></i>
-                        <span>Alerts</span>
-                    </a>
-                    <a href="#settings" class="nav-item" data-section="settings">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                </nav>
-            </aside>
-
-            <!-- Content Area -->
             <div class="content-area">
-                <!-- Dashboard Section -->
-                <section id="dashboard" class="content-section active">
-                    <div class="section-header">
-                        <h2>Dashboard Overview</h2>
-                        <div class="section-actions">
-                            <button class="btn btn-primary" onclick="refreshDashboard()">
-                                <i class="fas fa-sync-alt"></i> Refresh
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="dashboard-grid">
-                        <!-- Key Metrics -->
-                        <div class="metric-card">
-                            <div class="metric-header">
-                                <h3>Transaction Volume</h3>
-                                <i class="fas fa-chart-bar"></i>
-                            </div>
-                            <div class="metric-value" id="transactionVolume">0</div>
-                            <div class="metric-change positive">+12.5% from yesterday</div>
-                        </div>
-
-                        <div class="metric-card">
-                            <div class="metric-header">
-                                <h3>Fraud Rate</h3>
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                            <div class="metric-value" id="fraudRate">0.02%</div>
-                            <div class="metric-change negative">+0.01% from yesterday</div>
-                        </div>
-
-                        <div class="metric-card">
-                            <div class="metric-header">
-                                <h3>Model Accuracy</h3>
-                                <i class="fas fa-bullseye"></i>
-                            </div>
-                            <div class="metric-value" id="modelAccuracy">98.7%</div>
-                            <div class="metric-change positive">+0.3% from last week</div>
-                        </div>
-
-                        <div class="metric-card">
-                            <div class="metric-header">
-                                <h3>Response Time</h3>
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="metric-value" id="responseTime">45ms</div>
-                            <div class="metric-change positive">-5ms from yesterday</div>
-                        </div>
-
-                        <!-- Real-time Transactions -->
-                        <div class="card full-width">
-                            <div class="card-header">
-                                <h3>Real-time Transactions</h3>
-                                <div class="card-actions">
-                                    <button class="btn btn-sm" onclick="toggleAutoRefresh()">
-                                        <i class="fas fa-play" id="autoRefreshIcon"></i>
-                                        <span id="autoRefreshText">Auto Refresh</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="transactions-list" id="transactionsList">
-                                    <!-- Transactions will be populated here -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Fraud Detection Chart -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>Fraud Detection Trends</h3>
-                            </div>
-                            <div class="card-content">
-                                <canvas id="fraudChart" width="400" height="200"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- Model Performance -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>Model Performance</h3>
-                            </div>
-                            <div class="card-content">
-                                <div class="model-stats">
-                                    <div class="model-stat">
-                                        <span class="model-name">XGBoost</span>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 94%"></div>
-                                        </div>
-                                        <span class="model-score">94%</span>
-                                    </div>
-                                    <div class="model-stat">
-                                        <span class="model-name">LightGBM</span>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 92%"></div>
-                                        </div>
-                                        <span class="model-score">92%</span>
-                                    </div>
-                                    <div class="model-stat">
-                                        <span class="model-name">Random Forest</span>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 89%"></div>
-                                        </div>
-                                        <span class="model-score">89%</span>
-                                    </div>
-                                    <div class="model-stat">
-                                        <span class="model-name">Isolation Forest</span>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 87%"></div>
-                                        </div>
-                                        <span class="model-score">87%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 <!-- Transactions Section -->
                 <section id="transactions" class="content-section">
                     <div class="section-header">
-                        <h2>Transaction Analysis</h2>
+                        <h2>Transaction Verification</h2>
                         <div class="section-actions">
                             <button class="btn btn-primary" id="analyzeTransactionBtn">
-                                <i class="fas fa-search"></i> Analyze Transaction
+                                <i class="fas fa-search"></i> Verify Transaction
                             </button>
                         </div>
                     </div>
 
                     <div class="transaction-form">
+                        <div class="form-group">
+                            <label for="bankBookName">Bank Book Name</label>
+                            <input type="text" id="bankBookName" placeholder="Enter name as in bank book">
+                        </div>
                         <div class="form-group">
                             <label for="transactionId">Transaction ID</label>
                             <input type="text" id="transactionId" placeholder="Enter transaction ID">
@@ -206,16 +72,8 @@
                             <label for="amount">Amount (₹)</label>
                             <input type="number" id="amount" placeholder="Enter amount">
                         </div>
-                        <div class="form-group">
-                            <label for="merchant">Merchant</label>
-                            <input type="text" id="merchant" placeholder="Enter merchant name">
-                        </div>
-                        <div class="form-group">
-                            <label for="location">Location</label>
-                            <input type="text" id="location" placeholder="Enter location">
-                        </div>
                         <button class="btn btn-primary" id="checkForFraudBtn">
-                            <i class="fas fa-shield-alt"></i> Check for Fraud
+                            <i class="fas fa-shield-alt"></i> Verify Transaction
                         </button>
                     </div>
 
@@ -227,73 +85,34 @@
                 <!-- Analytics Section -->
                 <section id="analytics" class="content-section">
                     <div class="section-header">
-                        <h2>Advanced Analytics</h2>
+                        <h2>System Workflow</h2>
                     </div>
 
                     <div class="analytics-grid">
                         <div class="card">
                             <div class="card-header">
-                                <h3>Federated Learning Status</h3>
+                                <h3>Data Pre-processing</h3>
                             </div>
                             <div class="card-content">
-                                <div class="fl-status">
-                                    <div class="fl-metric">
-                                        <span class="fl-label">Participating Banks</span>
-                                        <span class="fl-value">5</span>
-                                    </div>
-                                    <div class="fl-metric">
-                                        <span class="fl-label">Global Model Accuracy</span>
-                                        <span class="fl-value">96.8%</span>
-                                    </div>
-                                    <div class="fl-metric">
-                                        <span class="fl-label">Privacy Level</span>
-                                        <span class="fl-value">High</span>
-                                    </div>
-                                </div>
+                                <p>Clean missing values, standardize amounts, and encode bank book names.</p>
                             </div>
                         </div>
 
                         <div class="card">
                             <div class="card-header">
-                                <h3>Blockchain Audit Trail</h3>
+                                <h3>Random Forest Training</h3>
                             </div>
                             <div class="card-content">
-                                <div class="blockchain-stats">
-                                    <div class="block-stat">
-                                        <span class="block-label">Blocks Mined</span>
-                                        <span class="block-value">1,247</span>
-                                    </div>
-                                    <div class="block-stat">
-                                        <span class="block-label">Audit Records</span>
-                                        <span class="block-value">45,892</span>
-                                    </div>
-                                    <div class="block-stat">
-                                        <span class="block-label">Integrity Score</span>
-                                        <span class="block-value">100%</span>
-                                    </div>
-                                </div>
+                                <p>Train the classifier using labeled transaction records.</p>
                             </div>
                         </div>
 
                         <div class="card">
                             <div class="card-header">
-                                <h3>Threat Intelligence</h3>
+                                <h3>Classification Outcome</h3>
                             </div>
                             <div class="card-content">
-                                <div class="threat-stats">
-                                    <div class="threat-item">
-                                        <i class="fas fa-exclamation-circle threat-high"></i>
-                                        <span>High Risk IPs: 23</span>
-                                    </div>
-                                    <div class="threat-item">
-                                        <i class="fas fa-exclamation-triangle threat-medium"></i>
-                                        <span>Medium Risk: 156</span>
-                                    </div>
-                                    <div class="threat-item">
-                                        <i class="fas fa-info-circle threat-low"></i>
-                                        <span>Low Risk: 1,234</span>
-                                    </div>
-                                </div>
+                                <p>Predict if the transaction is verified or failed due to incorrect details.</p>
                             </div>
                         </div>
                     </div>
@@ -302,81 +121,31 @@
                 <!-- Models Section -->
                 <section id="models" class="content-section">
                     <div class="section-header">
-                        <h2>Machine Learning Models</h2>
+                        <h2>Machine Learning Model</h2>
                     </div>
 
                     <div class="models-grid">
                         <div class="model-card">
                             <div class="model-header">
-                                <h3>Advanced Ensemble</h3>
+                                <h3>Random Forest Classifier</h3>
                                 <span class="model-status active">Active</span>
                             </div>
                             <div class="model-metrics">
                                 <div class="metric">
                                     <span class="metric-label">Accuracy</span>
-                                    <span class="metric-value">98.7%</span>
+                                    <span class="metric-value">94.0%</span>
                                 </div>
                                 <div class="metric">
                                     <span class="metric-label">Precision</span>
-                                    <span class="metric-value">96.2%</span>
+                                    <span class="metric-value">92.0%</span>
                                 </div>
                                 <div class="metric">
                                     <span class="metric-label">Recall</span>
-                                    <span class="metric-value">94.8%</span>
+                                    <span class="metric-value">90.0%</span>
                                 </div>
                             </div>
                             <div class="model-actions">
                                 <button class="btn btn-sm">Retrain</button>
-                                <button class="btn btn-sm">Deploy</button>
-                            </div>
-                        </div>
-
-                        <div class="model-card">
-                            <div class="model-header">
-                                <h3>GNN-Transformer</h3>
-                                <span class="model-status training">Training</span>
-                            </div>
-                            <div class="model-metrics">
-                                <div class="metric">
-                                    <span class="metric-label">Accuracy</span>
-                                    <span class="metric-value">97.3%</span>
-                                </div>
-                                <div class="metric">
-                                    <span class="metric-label">Precision</span>
-                                    <span class="metric-value">95.1%</span>
-                                </div>
-                                <div class="metric">
-                                    <span class="metric-label">Recall</span>
-                                    <span class="metric-value">93.7%</span>
-                                </div>
-                            </div>
-                            <div class="model-actions">
-                                <button class="btn btn-sm">Monitor</button>
-                                <button class="btn btn-sm">Stop</button>
-                            </div>
-                        </div>
-
-                        <div class="model-card">
-                            <div class="model-header">
-                                <h3>Reinforcement Learning</h3>
-                                <span class="model-status active">Active</span>
-                            </div>
-                            <div class="model-metrics">
-                                <div class="metric">
-                                    <span class="metric-label">Reward</span>
-                                    <span class="metric-value">+2.34</span>
-                                </div>
-                                <div class="metric">
-                                    <span class="metric-label">Episodes</span>
-                                    <span class="metric-value">1,247</span>
-                                </div>
-                                <div class="metric">
-                                    <span class="metric-label">Success Rate</span>
-                                    <span class="metric-value">89.2%</span>
-                                </div>
-                            </div>
-                            <div class="model-actions">
-                                <button class="btn btn-sm">Reset</button>
                                 <button class="btn btn-sm">Export</button>
                             </div>
                         </div>
@@ -386,7 +155,7 @@
                 <!-- Alerts Section -->
                 <section id="alerts" class="content-section">
                     <div class="section-header">
-                        <h2>Security Alerts</h2>
+                        <h2>System Notifications</h2>
                     </div>
 
                     <div class="alerts-list" id="alertsList">
@@ -403,16 +172,16 @@
                     <div class="settings-grid">
                         <div class="card">
                             <div class="card-header">
-                                <h3>Fraud Detection Thresholds</h3>
+                                <h3>Verification Thresholds</h3>
                             </div>
                             <div class="card-content">
                                 <div class="setting-item">
-                                    <label>High Risk Threshold</label>
+                                    <label>Failure Threshold</label>
                                     <input type="range" min="0" max="1" step="0.01" value="0.8" id="highRiskThreshold">
                                     <span class="threshold-value">0.8</span>
                                 </div>
                                 <div class="setting-item">
-                                    <label>Medium Risk Threshold</label>
+                                    <label>Review Threshold</label>
                                     <input type="range" min="0" max="1" step="0.01" value="0.5" id="mediumRiskThreshold">
                                     <span class="threshold-value">0.5</span>
                                 </div>

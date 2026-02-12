@@ -1,32 +1,107 @@
 ![UPI Fraud Detection System Cover](docs/images/cover.jpg)
 
-# UPI Fraud Detection System
+# UPI Fraud Detection Using Random Forest
 
-A comprehensive machine learning-based system for detecting fraudulent transactions in UPI (Unified Payments Interface) payment networks. This project combines advanced ML algorithms, real-time monitoring, and interactive visualization to provide a robust fraud detection solution.
+This project demonstrates a machine learning approach to UPI fraud detection using a Random Forest classifier. It analyzes transaction details such as bank book name, transaction ID, and amount to classify each transaction as either successful or failed due to incorrect details.
+
+## Abstract
+
+With the rapid adoption of Unified Payments Interface (UPI) for digital transactions, the risk of fraudulent activities has increased significantly. This project proposes a Random Forest-based approach to verify UPI transaction details. By analyzing inputs like bank book name, transaction ID, and transaction amount, the system classifies each attempt as either:
+
+- Transaction Failed: Incorrect Details Entered
+- Transaction Successful: Details Verified and Processed
+
+The model is designed to be accurate, robust against overfitting, and suitable for real-world digital payment environments.
+
+**Keywords**: UPI Digital Payments, Random Forest Algorithm, Machine Learning
+
+## Existing System (KNN)
+
+K-Nearest Neighbors (KNN) is a simple, non-parametric algorithm used for classification and regression. It predicts outcomes by comparing a query point to its nearest neighbors. While intuitive and easy to implement, KNN becomes slow on large datasets and is sensitive to irrelevant or noisy features.
+
+### Disadvantages
+
+- Slow on large datasets due to distance computations
+- Sensitive to noisy or irrelevant features
+- Struggles with high-dimensional data
+
+## Proposed System (Random Forest)
+
+Random Forest builds multiple decision trees and combines their outputs to improve accuracy and reduce overfitting. For UPI fraud detection, it captures subtle patterns from transaction attributes and adapts well to evolving fraud tactics. Feature importance scores also provide insight into which details most influence the decision.
+
+### Advantages
+
+- Works well for classification and regression tasks
+- Handles large, high-dimensional datasets
+- Reduces overfitting by aggregating multiple trees
+
+### Applications
+
+- Banking: loan and transaction risk analysis
+- Medicine: disease trend and risk identification
+- Land Use: identifying similar land patterns
+- Marketing: customer segmentation and trend analysis
+- Crop Prediction
+
+## System Specifications
+
+### Hardware
+
+- Processor: Intel i5 (or equivalent)
+- RAM: 8 GB minimum
+- Storage: 128 GB minimum
+
+### Software
+
+- OS: Windows 10
+- Python: 3.6+
+- IDE: PyCharm or Jupyter Notebook
+- Libraries: numpy, pandas, scikit-learn, flask/fastapi
+
+## Implementation Outline
+
+### System
+
+1. Create Dataset
+    - Generate synthetic records with bank book name, transaction ID, amount, and outcome
+    - Split into training (70%) and testing (30%) sets
+2. Pre-processing
+    - Handle missing values
+    - Normalize numerical values and encode categorical fields
+3. Training
+    - Train the Random Forest classifier
+    - Tune hyperparameters for best performance
+4. Classification
+    - Predict outcomes on new user input
+    - Report success or failure with confidence
+
+### User
+
+1. Upload Transaction Details
+    - Enter bank book name, transaction ID, and amount
+    - Validate inputs before submission
+2. View Results
+    - Display success or failure outcome
+    - Optionally show confidence or feature importance
 
 ## Repository
 
-GitHub: [https://github.com/Skismail57/UPIFraudDetectionUsingMachineLearning](https://github.com/Skismail57/UPIFraudDetectionUsingMachineLearning)
+GitHub: [https://github.com/vamsikiran1234/Upi_Fraud_Detection](https://github.com/vamsikiran1234/Upi_Fraud_Detection)
 
 ## Features
 
-- **Real-time Transaction Monitoring**: Analyze transactions as they occur to detect suspicious patterns
-- **Multi-model Ensemble Detection**: Combines multiple ML models for higher accuracy
-- **Interactive Dashboard**: Visualize fraud patterns and system performance metrics
-- **API Integration**: Easy integration with existing payment systems
-- **Graph Neural Networks**: Detect complex fraud patterns and collusion networks
-- **Explainable AI**: Understand why transactions are flagged as fraudulent
-- **Scalable Architecture**: Designed to handle high transaction volumes
+- **Random Forest Classifier**: Robust, accurate, and resistant to overfitting
+- **Transaction Detail Verification**: Bank book name, transaction ID, amount
+- **Clear Outcomes**: 
+    - Transaction Failed: Incorrect Details Entered
+    - Transaction Successful: Details Verified and Processed
+- **Simple Web UI**: Quick validation for demo and review
 
 ## Technologies Used
 
-- **Machine Learning**: scikit-learn, XGBoost, LightGBM
-- **Deep Learning**: PyTorch, Graph Neural Networks
-- **API Framework**: FastAPI
+- **Machine Learning**: scikit-learn, pandas, numpy
+- **API Framework**: FastAPI (demo backend)
 - **Frontend**: HTML, CSS, JavaScript
-- **Visualization**: Interactive charts and graphs
-- **Deployment**: Docker, Kubernetes support
-- **Monitoring**: Prometheus, Grafana integration
 
 ## Getting Started
 
@@ -60,45 +135,33 @@ pip install -r requirements-fixed.txt
 
 ### Running the System
 
-#### Basic Mode
+#### Basic Mode (Backend API)
 
-Run the basic fraud detection system:
+Run the demo API:
 ```bash
-python quick_start.py
+python simple_backend_api.py
 ```
 
 #### Frontend Dashboard
 
-Start the frontend dashboard:
+Start the frontend UI:
 ```bash
-python frontend/server.py
+cd frontend
+python server.py
 ```
 
-#### Advanced Mode
+## System Workflow
 
-For advanced features and models:
-```bash
-python advanced_quick_start.py
-```
+1. **Create Dataset**: Build or simulate transaction records
+2. **Pre-processing**: Handle missing values and encode features
+3. **Training**: Train the Random Forest classifier
+4. **Classification**: Predict outcome for new transactions
 
-## System Architecture
+## Advantages
 
-The system consists of several components:
-
-1. **Data Ingestion Layer**: Processes incoming transaction data
-2. **Feature Engineering**: Extracts and transforms relevant features
-3. **Model Ensemble**: Multiple models working together for detection
-4. **Decision Engine**: Makes the final fraud determination
-5. **API Layer**: Exposes functionality to external systems
-6. **Dashboard**: Visualizes results and system performance
-
-## Future Enhancements
-
-- Federated learning for privacy-preserving fraud detection
-- Blockchain integration for immutable audit trails
-- Advanced anomaly detection with reinforcement learning
-- Mobile app for alerts and notifications
-- Integration with additional payment platforms
+- Performs well on noisy, real-world data
+- Handles high-dimensional features effectively
+- Reduces overfitting by combining multiple trees
 
 ## Contributing
 
@@ -156,7 +219,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Author
 
-© 2025 S K Ismail
+© 2026 Vamsi Kiran
 
 ---
 

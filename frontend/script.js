@@ -10,9 +10,7 @@ class FraudDetectionApp {
 
     init() {
         this.setupEventListeners();
-        this.loadDashboard();
-        this.startRealTimeUpdates();
-        this.initializeChart();
+        this.loadTransactions();
         this.loadAlerts();
     }
 
@@ -61,9 +59,6 @@ class FraudDetectionApp {
 
             // Load section-specific data
             switch (sectionId) {
-                case 'dashboard':
-                    this.loadDashboard();
-                    break;
                 case 'transactions':
                     this.loadTransactions();
                     break;
@@ -87,118 +82,15 @@ class FraudDetectionApp {
         activeItem.classList.add('active');
     }
 
-    async loadDashboard() {
-        try {
-            this.showLoading();
-            
-            // Simulate API calls for dashboard data
-            const dashboardData = await this.fetchDashboardData();
-            this.updateDashboardMetrics(dashboardData);
-            this.updateTransactionsList(dashboardData.transactions);
-            
-        } catch (error) {
-            this.showToast('Error loading dashboard data', 'error');
-            console.error('Dashboard load error:', error);
-        } finally {
-            this.hideLoading();
-        }
-    }
-
-    async fetchDashboardData() {
-        try {
-            // Try to fetch from backend API
-            const response = await fetch(`${this.apiBaseUrl}/api/dashboard/metrics`);
-            if (response.ok) {
-                const metrics = await response.json();
-                const transactionsResponse = await fetch(`${this.apiBaseUrl}/api/transactions?limit=10`);
-                const transactions = transactionsResponse.ok ? await transactionsResponse.json() : this.generateMockTransactions(10);
-                
-                return {
-                    transactionVolume: metrics.transaction_volume,
-                    fraudRate: metrics.fraud_rate,
-                    modelAccuracy: metrics.model_accuracy,
-                    responseTime: metrics.response_time,
-                    activeTransactions: metrics.active_transactions,
-                    fraudDetected: metrics.fraud_detected,
-                    transactions: transactions
-                };
-            }
-        } catch (error) {
-            console.log('Backend not available, using mock data');
-        }
-        
-        // Fallback to mock data
-        return {
-            transactionVolume: Math.floor(Math.random() * 10000) + 5000,
-            fraudRate: (Math.random() * 0.1).toFixed(3) + '%',
-            modelAccuracy: (95 + Math.random() * 4).toFixed(1) + '%',
-            responseTime: Math.floor(Math.random() * 50) + 30 + 'ms',
-            activeTransactions: Math.floor(Math.random() * 100) + 50,
-            fraudDetected: Math.floor(Math.random() * 10),
-            transactions: this.generateMockTransactions(10)
-        };
-    }
-
-    updateDashboardMetrics(data) {
-        document.getElementById('transactionVolume').textContent = data.transactionVolume.toLocaleString();
-        document.getElementById('fraudRate').textContent = data.fraudRate;
-        document.getElementById('modelAccuracy').textContent = data.modelAccuracy;
-        document.getElementById('responseTime').textContent = data.responseTime;
-        document.getElementById('activeTransactions').textContent = data.activeTransactions;
-        document.getElementById('fraudDetected').textContent = data.fraudDetected;
-    }
-
-    generateMockTransactions(count) {
-        const transactions = [];
-        const merchants = ['Amazon', 'Flipkart', 'Swiggy', 'Zomato', 'Uber', 'Ola', 'Paytm', 'PhonePe'];
-        const locations = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
-        const statuses = ['safe', 'risky', 'fraud'];
-
-        for (let i = 0; i < count; i++) {
-            const amount = Math.floor(Math.random() * 50000) + 100;
-            const status = statuses[Math.floor(Math.random() * statuses.length)];
-            const merchant = merchants[Math.floor(Math.random() * merchants.length)];
-            const location = locations[Math.floor(Math.random() * locations.length)];
-
-            transactions.push({
-                id: 'TXN' + (1000000 + i),
-                amount: amount,
-                merchant: merchant,
-                location: location,
-                status: status,
-                timestamp: new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString()
-            });
-        }
-
-        return transactions;
-    }
-
-    updateTransactionsList(transactions) {
-        const container = document.getElementById('transactionsList');
-        if (!container) return;
-
-        container.innerHTML = transactions.map(txn => `
-            <div class="transaction-item">
-                <div class="transaction-info">
-                    <div class="transaction-id">${txn.id}</div>
-                    <div class="transaction-details">
-                        ${txn.merchant} • ${txn.location} • ${txn.timestamp}
-                    </div>
-                </div>
-                <div class="transaction-amount">₹${txn.amount.toLocaleString()}</div>
-                <div class="transaction-status ${txn.status}">${txn.status}</div>
-            </div>
-        `).join('');
-    }
-
     async submitTransaction() {
+        const bankBookName = document.getElementById('bankBookName').value;
         const transactionId = document.getElementById('transactionId').value;
         const amount = document.getElementById('amount').value;
-        const merchant = document.getElementById('merchant').value;
-        const location = document.getElementById('location').value;
 
-        if (!transactionId || !amount || !merchant || !location) {
-            this.showToast('Please fill in all fields', 'warning');
+        // Strict validation
+        const validation = this.validateTransactionInputs(bankBookName, transactionId, amount);
+        if (!validation.valid) {
+            this.showToast(validation.error, 'error');
             return;
         }
 
@@ -206,25 +98,114 @@ class FraudDetectionApp {
             this.showLoading();
             
             const transactionData = {
-                transaction_id: transactionId,
+                bank_book_name: bankBookName.trim().toUpperCase(),
+                transaction_id: transactionId.trim().toUpperCase(),
                 amount: parseFloat(amount),
-                merchant: merchant,
-                location: location,
                 timestamp: new Date().toISOString()
             };
 
             console.log('Transaction data:', transactionData);
             
-            const result = await this.analyzeTransaction(transactionData);
-            console.log('Analysis result:', result);
+            const result = await this.verifyWithSyntheticData(transactionData);
+            console.log('Synthetic verification result:', result);
             this.displayAnalysisResult(result);
             
         } catch (error) {
-            this.showToast('Error analyzing transaction', 'error');
-            console.error('Transaction analysis error:', error);
+            this.showToast('Error verifying against synthetic data', 'error');
+            console.error('Synthetic verification error:', error);
         } finally {
             this.hideLoading();
         }
+    }
+
+    async verifyWithSyntheticData(transactionData) {
+        const startTime = performance.now();
+        const params = new URLSearchParams({
+            transaction_id: transactionData.transaction_id,
+            bank_book_name: transactionData.bank_book_name,
+            amount: String(transactionData.amount)
+        });
+
+        const response = await fetch(`${this.apiBaseUrl}/api/synthetic-verify?${params.toString()}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Synthetic verify failed: ${response.status} ${errorText}`);
+        }
+
+        const data = await response.json();
+        const processingTime = Math.max(1, Math.round(performance.now() - startTime));
+
+        const matched = Boolean(data.matched);
+        const outcome = matched ? 'success' : 'failed';
+        const message = matched
+            ? 'Transaction Successful: Details Verified against synthetic dataset.'
+            : 'Transaction Failed: No matching record found in synthetic dataset.';
+
+        return {
+            transaction_id: transactionData.transaction_id,
+            bank_book_name: transactionData.bank_book_name,
+            amount: transactionData.amount,
+            outcome: outcome,
+            message: message,
+            model: 'Synthetic Dataset Verification',
+            confidence: matched ? '100%' : '0%',
+            processing_time: processingTime,
+            explanation: matched
+                ? 'Matched against generated synthetic dataset.'
+                : 'No exact match in synthetic dataset.'
+        };
+    }
+
+    validateTransactionInputs(bankBookName, transactionId, amount) {
+        const knownBanks = [
+            'SBI SAVINGS',
+            'HDFC SAVINGS',
+            'ICICI CURRENT',
+            'AXIS SAVINGS',
+            'KOTAK SAVINGS'
+        ];
+
+        // Check if fields are empty
+        if (!bankBookName || !bankBookName.trim()) {
+            return { valid: false, error: 'Bank Book Name is required. Enter name as in bank book.' };
+        }
+        if (!transactionId || !transactionId.trim()) {
+            return { valid: false, error: 'Transaction ID is required. Enter transaction ID.' };
+        }
+        if (!amount || amount.trim() === '') {
+            return { valid: false, error: 'Amount is required. Enter amount in ₹.' };
+        }
+
+        // Validate Bank Book Name (case-insensitive comparison)
+        const normalizedBank = bankBookName.trim().toUpperCase();
+        if (!knownBanks.includes(normalizedBank)) {
+            return { 
+                valid: false, 
+                error: `Invalid Bank Book Name. Valid banks: ${knownBanks.join(', ')}`
+            };
+        }
+
+        // Validate Transaction ID format (TXN + 6+ digits)
+        const txnIdUpper = transactionId.trim().toUpperCase();
+        if (!/^TXN\d{6,}$/.test(txnIdUpper)) {
+            return { 
+                valid: false, 
+                error: 'Invalid Transaction ID format. Format should be: TXN followed by 6+ digits (e.g., TXN1234567).' };
+        }
+
+        // Validate Amount (must be number, > 0, and <= 100,000)
+        const amountNum = parseFloat(amount);
+        if (isNaN(amountNum)) {
+            return { valid: false, error: 'Amount must be a valid number.' };
+        }
+        if (amountNum <= 0) {
+            return { valid: false, error: 'Amount must be greater than ₹0.' };
+        }
+        if (amountNum > 100000) {
+            return { valid: false, error: 'Amount cannot exceed ₹100,000.' };
+        }
+
+        return { valid: true };
     }
 
     async analyzeTransaction(transactionData) {
@@ -232,13 +213,13 @@ class FraudDetectionApp {
             // Format data according to backend API requirements
             const apiData = {
                 transaction_id: transactionData.transaction_id,
-                upi_id: "user@upi", // Default value
-                merchant_id: transactionData.merchant,
+                upi_id: "user@upi",
+                merchant_id: transactionData.bank_book_name,
                 amount: parseFloat(transactionData.amount),
                 hour: new Date().getHours(),
-                device_risk_score: 0.3, // Default value
-                location_risk_score: 0.2, // Default value
-                user_behavior_score: 0.5 // Default value
+                device_risk_score: 0.3,
+                location_risk_score: 0.2,
+                user_behavior_score: 0.5
             };
             
             console.log('Sending data to API:', apiData);
@@ -257,7 +238,7 @@ class FraudDetectionApp {
             if (response.ok) {
                 const result = await response.json();
                 console.log('API response:', result);
-                return result;
+                return this.normalizeApiResult(result, transactionData);
             } else {
                 // Log error details for debugging
                 const errorText = await response.text();
@@ -276,24 +257,59 @@ class FraudDetectionApp {
         }
     }
     
+    normalizeApiResult(result, transactionData) {
+        const riskScore = result.risk_score || 0;
+        const outcome = riskScore >= 0.5 ? 'failed' : 'success';
+        const message = outcome === 'success'
+            ? 'Transaction Successful: Details Verified and Processed.'
+            : 'Transaction Failed: Incorrect Details Entered. Please Verify and Try Again.';
+
+        return {
+            transaction_id: transactionData.transaction_id,
+            bank_book_name: transactionData.bank_book_name,
+            amount: transactionData.amount,
+            outcome: outcome,
+            message: message,
+            model: 'Random Forest',
+            confidence: result.model_confidence || '90%',
+            processing_time: result.processing_time || 15,
+            explanation: result.explanation || ''
+        };
+    }
+
     generateMockAnalysis(transactionData) {
         return new Promise((resolve) => {
             setTimeout(() => {
-                const riskScore = Math.random();
-                const riskLevel = riskScore > 0.7 ? 'high' : riskScore > 0.4 ? 'medium' : 'low';
-                
+                const knownBanks = [
+                    'SBI SAVINGS',
+                    'HDFC SAVINGS',
+                    'ICICI CURRENT',
+                    'AXIS SAVINGS',
+                    'KOTAK SAVINGS'
+                ];
+                const bankName = (transactionData.bank_book_name || '').trim().toUpperCase();
+                const txnId = (transactionData.transaction_id || '').trim().toUpperCase();
+                const amount = Number(transactionData.amount || 0);
+                const nameOk = knownBanks.includes(bankName);
+                const idOk = /^TXN\d{6,}$/.test(txnId);
+                const amountOk = amount > 0 && amount <= 100000;
+                const outcome = nameOk && idOk && amountOk ? 'success' : 'failed';
+                const message = outcome === 'success'
+                    ? 'Transaction Successful: Details Verified and Processed.'
+                    : 'Transaction Failed: Incorrect Details Entered. Please Verify and Try Again.';
+
                 resolve({
                     transaction_id: transactionData.transaction_id,
-                    risk_score: riskScore,
-                    risk_level: riskLevel,
-                    factors: this.generateRiskFactors(riskLevel),
-                    recommendation: this.getRecommendation(riskLevel),
-                    model_confidence: (85 + Math.random() * 15).toFixed(1) + '%',
+                    bank_book_name: transactionData.bank_book_name,
+                    amount: amount,
+                    outcome: outcome,
+                    message: message,
+                    model: 'Random Forest',
+                    confidence: (85 + Math.random() * 10).toFixed(1) + '%',
                     explanation: 'Using mock data (backend API unavailable)',
-                    decision: riskLevel === 'high' ? 'BLOCK' : riskLevel === 'medium' ? 'CHALLENGE' : 'ALLOW',
                     processing_time: 15
                 });
-            }, 1500);
+            }, 1200);
         });
     }
 
@@ -336,46 +352,33 @@ class FraudDetectionApp {
         // Clear any previous error messages
         document.querySelectorAll('.error-message').forEach(el => el.remove());
         
-        // Map backend response to frontend format
-        // Handle both formats: direct risk_score or risk_score inside risk_factors
-        const riskScore = result.risk_score || (result.risk_factors ? result.risk_factors.overall_score : 0);
-        const riskLevel = result.risk_level || this.getRiskLevelFromScore(riskScore);
-        const decision = result.decision || (riskLevel === 'high' ? 'BLOCK' : riskLevel === 'medium' ? 'CHALLENGE' : 'ALLOW');
+        const outcome = result.outcome || 'failed';
+        const outcomeClass = outcome === 'success' ? 'low' : 'high';
+        const badgeLabel = outcome === 'success' ? 'VERIFIED' : 'FAILED';
         
-        // Create result HTML
         container.innerHTML = `
-            <div class="result-header ${riskLevel}">
-                <h3>Transaction Analysis Result</h3>
-                <div class="risk-badge ${riskLevel}">${riskLevel.toUpperCase()} RISK</div>
+            <div class="result-header ${outcomeClass}">
+                <h3>Transaction Verification Result</h3>
+                <div class="risk-badge ${outcomeClass}">${badgeLabel}</div>
             </div>
             <div class="result-content">
                 <div class="result-summary">
                     <div class="result-item">
-                        <span class="label">Risk Score:</span>
-                        <span class="value">${(riskScore * 100).toFixed(1)}%</span>
+                        <span class="label">Outcome:</span>
+                        <span class="value">${result.message}</span>
                     </div>
                     <div class="result-item">
-                        <span class="label">Decision:</span>
-                        <span class="value decision ${decision.toLowerCase()}">${decision}</span>
+                        <span class="label">Model:</span>
+                        <span class="value">${result.model || 'Random Forest'}</span>
                     </div>
                     <div class="result-item">
                         <span class="label">Confidence:</span>
-                        <span class="value">${result.model_confidence || '90%'}</span>
+                        <span class="value">${result.confidence || '90%'}</span>
                     </div>
                     <div class="result-item">
                         <span class="label">Processing Time:</span>
                         <span class="value">${result.processing_time || 15}ms</span>
                     </div>
-                </div>
-                <div class="risk-factors">
-                    <h4>Risk Factors</h4>
-                    <div class="factors-list">
-                        ${this.renderRiskFactors(result.factors || [])}
-                    </div>
-                </div>
-                <div class="recommendation">
-                    <h4>Recommendation</h4>
-                    <p>${result.recommendation || 'No recommendation available'}</p>
                 </div>
                 ${result.explanation ? `<div class="explanation"><p><em>${result.explanation}</em></p></div>` : ''}
             </div>
@@ -407,12 +410,11 @@ class FraudDetectionApp {
     
     // New method to handle the Analyze Transaction button click
     analyzeCurrentTransaction() {
+        const bankBookName = document.getElementById('bankBookName').value;
         const transactionId = document.getElementById('transactionId').value;
         const amount = document.getElementById('amount').value;
-        const merchant = document.getElementById('merchant').value;
-        const location = document.getElementById('location').value;
 
-        if (!transactionId || !amount || !merchant || !location) {
+        if (!bankBookName || !transactionId || !amount) {
             this.showToast('Please fill in all fields', 'warning');
             return;
         }
@@ -420,89 +422,26 @@ class FraudDetectionApp {
         this.submitTransaction();
     }
 
-    initializeChart() {
-        const canvas = document.getElementById('fraudChart');
-        if (!canvas) return;
-
-        const ctx = canvas.getContext('2d');
-        
-        // Simple chart implementation
-        this.drawSimpleChart(ctx, canvas.width, canvas.height);
-    }
-
-    drawSimpleChart(ctx, width, height) {
-        // Clear canvas
-        ctx.clearRect(0, 0, width, height);
-        
-        // Draw axes
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 1;
-        
-        // Y-axis
-        ctx.beginPath();
-        ctx.moveTo(40, 20);
-        ctx.lineTo(40, height - 40);
-        ctx.stroke();
-        
-        // X-axis
-        ctx.beginPath();
-        ctx.moveTo(40, height - 40);
-        ctx.lineTo(width - 20, height - 40);
-        ctx.stroke();
-        
-        // Draw sample data
-        const data = [20, 35, 25, 45, 30, 55, 40, 60, 35, 50];
-        const maxValue = Math.max(...data);
-        
-        ctx.strokeStyle = '#667eea';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        
-        data.forEach((value, index) => {
-            const x = 40 + (index * (width - 60) / (data.length - 1));
-            const y = height - 40 - (value / maxValue) * (height - 60);
-            
-            if (index === 0) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
-            }
-        });
-        
-        ctx.stroke();
-        
-        // Draw data points
-        ctx.fillStyle = '#667eea';
-        data.forEach((value, index) => {
-            const x = 40 + (index * (width - 60) / (data.length - 1));
-            const y = height - 40 - (value / maxValue) * (height - 60);
-            
-            ctx.beginPath();
-            ctx.arc(x, y, 4, 0, 2 * Math.PI);
-            ctx.fill();
-        });
-    }
-
     loadAlerts() {
         const alerts = [
             {
                 id: 1,
-                title: 'High Risk Transaction Detected',
-                description: 'Transaction TXN1234567 flagged as high risk due to unusual amount and location.',
+                title: 'Verification Failed',
+                description: 'Transaction TXN1234567 failed due to incorrect details. Please verify and retry.',
                 level: 'high',
                 timestamp: '2 minutes ago'
             },
             {
                 id: 2,
-                title: 'Model Performance Degradation',
-                description: 'XGBoost model accuracy dropped below 95% threshold.',
+                title: 'Random Forest Model Ready',
+                description: 'Model loaded and ready for transaction verification.',
                 level: 'medium',
                 timestamp: '15 minutes ago'
             },
             {
                 id: 3,
-                title: 'New Threat Intelligence Update',
-                description: 'Updated threat intelligence feed with 23 new high-risk IP addresses.',
+                title: 'Dataset Pre-processing Completed',
+                description: 'Feature encoding and normalization completed for demo dataset.',
                 level: 'low',
                 timestamp: '1 hour ago'
             }
@@ -527,25 +466,12 @@ class FraudDetectionApp {
     }
 
     startRealTimeUpdates() {
-        // Update header stats every 5 seconds
-        setInterval(() => {
-            this.updateHeaderStats();
-        }, 5000);
-
         // Update transaction list every 10 seconds
         setInterval(() => {
             if (this.isAutoRefresh) {
-                this.loadDashboard();
+                this.loadTransactions();
             }
         }, 10000);
-    }
-
-    updateHeaderStats() {
-        const activeTransactions = Math.floor(Math.random() * 100) + 50;
-        const fraudDetected = Math.floor(Math.random() * 10);
-        
-        document.getElementById('activeTransactions').textContent = activeTransactions;
-        document.getElementById('fraudDetected').textContent = fraudDetected;
     }
 
     toggleAutoRefresh() {
@@ -565,8 +491,8 @@ class FraudDetectionApp {
     }
 
     refreshDashboard() {
-        this.loadDashboard();
-        this.showToast('Dashboard refreshed', 'success');
+        this.loadTransactions();
+        this.showToast('Transactions refreshed', 'success');
     }
 
     navigateToTransactionSection() {
@@ -627,12 +553,6 @@ class FraudDetectionApp {
 }
 
 // Utility functions
-function refreshDashboard() {
-    if (window.fraudApp) {
-        window.fraudApp.refreshDashboard();
-    }
-}
-
 function toggleAutoRefresh() {
     if (window.fraudApp) {
         window.fraudApp.toggleAutoRefresh();
@@ -660,16 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.animationDelay = `${index * 0.1}s`;
         card.classList.add('fade-in');
     });
-});
-
-// Handle window resize for responsive chart
-window.addEventListener('resize', () => {
-    if (window.fraudApp && window.fraudApp.chart) {
-        // Redraw chart on resize
-        setTimeout(() => {
-            window.fraudApp.initializeChart();
-        }, 100);
-    }
 });
 
 // Initialize the app
