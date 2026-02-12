@@ -1,4 +1,4 @@
-![UPI Fraud Detection System Cover](docs/images/cover.jpg)
+![UPI Fraud Detection System Cover]
 
 # UPI Fraud Detection Using Random Forest
 
@@ -196,26 +196,9 @@ The project directory is organised as follows:
     └── k8s/                    # Kubernetes configurations
 ```
 
-## Screenshots
 
-### API Documentation
-![API Documentation](./docs/images/api_documentation.jpg)
 
-### API Endpoints
-![API Endpoints](./docs/images/api_endpoints.jpg)
 
-### Dashboard Overview
-![Dashboard Overview](./docs/images/dashboard_overview.jpg)
-
-### Real-time Transactions
-![Real-time Transactions](./docs/images/realtime_transactions.jpg)
-
-### Fraud Detection Trends
-![Fraud Detection Trends](./docs/images/fraud_detection_trends.jpg)
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Author
 
